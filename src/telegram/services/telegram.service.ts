@@ -88,7 +88,6 @@ export class TelegramService {
 
     this.bot.command('cringe', async (ctx) => {
       const cringe = await this.resultService.getUsersWithMinCorrectAnswers();
-
       if (!cringe.length) {
         ctx.reply('Крінжів поки що немає');
 

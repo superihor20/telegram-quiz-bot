@@ -1,0 +1,13 @@
+services:
+  app_dopi:
+    build: .
+    env_file:
+      - .env.dopi
+    ports:
+      - '4201:4200'
+    volumes:
+      - .:/usr/src/app
+      - quiz_data_dopi:/usr/src/app
+
+volumes:
+  quiz_data_dopi:
