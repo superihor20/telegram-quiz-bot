@@ -39,8 +39,9 @@ export class QuestionService {
       const question = this.create(data);
 
       await this.questionRepository.save(question);
-    } catch {
-      throw new BadRequestException('Invalid data');
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException(e?.message);
     }
   }
 
