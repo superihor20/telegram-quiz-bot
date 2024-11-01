@@ -15,6 +15,7 @@ export class ImportService {
         question: questionData.question,
         explanation: questionData.explanation,
         answers: questionData.answers,
+        code: questionData.code,
       });
     }
 
