@@ -29,9 +29,6 @@ import { AppConfigModule } from 'src/app-config/app-config.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'assets'),
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'data'),
-    }),
     AnswerModule,
     ResultModule,
     TelegramModule,
