@@ -24,4 +24,14 @@ export class AppConfigService {
 
     return telegramChatId;
   }
+
+  get adminId(): string {
+    const adminId = this.configService.get<string>('ADMIN_ID');
+
+    if (!adminId) {
+      throw new Error('TELEGRAM_BOT_TOKEN is not defined in .env');
+    }
+
+    return adminId;
+  }
 }

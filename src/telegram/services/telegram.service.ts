@@ -131,13 +131,13 @@ export class TelegramService {
     });
 
     this.bot.on('poll_answer', async (ctx) => {
-      const userAnswerIndex = ctx.update.poll_answer.option_ids[0];
       const user = await this.telegramUserService.findOrCreateUser(ctx);
 
-      if (user.id === 11) {
+      if (user.telegram_id === this.appConfigService.adminId) {
         return;
       }
 
+      const userAnswerIndex = ctx.update.poll_answer.option_ids[0];
       const question = await this.questionService.findBy(
         {
           pollId: ctx.update.poll_answer.poll_id,
