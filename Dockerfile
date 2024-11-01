@@ -10,6 +10,8 @@ RUN pnpm install
 
 COPY . .
 
+COPY ./.env ./
+
 RUN pnpm run build
 
 EXPOSE 4200

@@ -7,6 +7,7 @@ export class ImportService {
   constructor(private readonly questionService: QuestionService) {}
 
   async importFromJson(file: Express.Multer.File) {
+    console.log(file);
     const fileData = file.buffer.toString('utf-8');
     const data: ImportedData = JSON.parse(fileData);
 
