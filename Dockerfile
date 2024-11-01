@@ -14,6 +14,8 @@ COPY ./.env ./
 
 RUN pnpm run build
 
+RUN pnpm run migration:run
+
 EXPOSE 4200
 
 CMD ["node", "dist/main.js"]

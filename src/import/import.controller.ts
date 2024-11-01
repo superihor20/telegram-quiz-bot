@@ -25,7 +25,6 @@ export class ImportController {
     }),
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
     await this.importService.importFromJson(file);
   }
 
