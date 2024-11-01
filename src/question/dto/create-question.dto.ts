@@ -1,9 +1,9 @@
-import { Answer } from 'src/answer/entities/answer.entity';
+import { ImportedAnswer } from 'src/types/imported-data';
 
 export type CreateQuestionDto = {
   question: string;
   explanation?: string;
   code?: string;
-  answers: Answer[];
+  answers: ImportedAnswer[];
   isPublished?: boolean;
 };

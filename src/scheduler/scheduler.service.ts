@@ -32,6 +32,7 @@ export class SchedulerService {
       questionData.answers.map((answer) => answer.answer),
       questionData.answers.findIndex((answer) => answer.isCorrect),
       questionData.explanation,
+      questionData.code,
     );
   }
 
