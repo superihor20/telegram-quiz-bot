@@ -10,6 +10,7 @@ import { GifService } from './services/gif.service';
 import { EmojiService } from './services/emoji.service';
 import { AppConfigModule } from 'src/app-config/app-config.module';
 import { CommandService } from './services/command.service';
+import { EventService } from './services/event.service';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CommandService } from './services/command.service';
     GifService,
     EmojiService,
     CommandService,
+    EventService,
   ],
   providers: [
     TelegramService,
@@ -32,6 +34,7 @@ import { CommandService } from './services/command.service';
     GifService,
     EmojiService,
     CommandService,
+    EventService,
   ],
 })
 export class TelegramModule {}

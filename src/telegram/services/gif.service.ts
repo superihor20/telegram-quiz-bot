@@ -27,7 +27,7 @@ export class GifService {
   async replyWithRandomGif(ctx: Context, category: keyof typeof this.gifs) {
     const gifPath = this.getRandomGif(category);
     await ctx.replyWithAnimation({
-      source: resolve(__dirname, '..', '..', 'assets', gifPath),
+      source: resolve(__dirname, '..', '..', '..', 'assets', gifPath),
     });
   }
 }
