@@ -16,7 +16,7 @@ export class GifService {
     cringe: cringeGif,
     pressF: pressFGifs,
     noBadWords: noBadWordsGif,
-  };
+  } as const;
 
   getRandomGif(category: keyof typeof this.gifs): string {
     const gifs = this.gifs[category];
@@ -24,8 +24,10 @@ export class GifService {
     return gifs[getRandomNumber(gifs.length - 1)];
   }
 
-  async replyWithAnimation(ctx: Context, fileName: string) {
-    const filePath = resolve(__dirname, '..', '..', '..', 'assets', fileName);
-    await ctx.replyWithAnimation({ source: filePath });
+  async replyWithRandomGif(ctx: Context, category: keyof typeof this.gifs) {
+    const gifPath = this.getRandomGif(category);
+    await ctx.replyWithAnimation({
+      source: resolve(__dirname, '..', '..', 'assets', gifPath),
+    });
   }
 }

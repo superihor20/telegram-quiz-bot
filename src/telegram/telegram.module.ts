@@ -9,6 +9,7 @@ import { TelegramUserService } from './services/telegram-user.service';
 import { GifService } from './services/gif.service';
 import { EmojiService } from './services/emoji.service';
 import { AppConfigModule } from 'src/app-config/app-config.module';
+import { CommandService } from './services/command.service';
 
 @Module({
   imports: [
@@ -18,7 +19,19 @@ import { AppConfigModule } from 'src/app-config/app-config.module';
     WeeklyWinnerModule,
     AppConfigModule,
   ],
-  exports: [TelegramService, TelegramUserService, GifService, EmojiService],
-  providers: [TelegramService, TelegramUserService, GifService, EmojiService],
+  exports: [
+    TelegramService,
+    TelegramUserService,
+    GifService,
+    EmojiService,
+    CommandService,
+  ],
+  providers: [
+    TelegramService,
+    TelegramUserService,
+    GifService,
+    EmojiService,
+    CommandService,
+  ],
 })
 export class TelegramModule {}
