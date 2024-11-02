@@ -166,8 +166,6 @@ export class TelegramService {
 
         return;
       }
-
-      ctx.reply('Твій голос не зарахований :(');
     });
 
     this.bot.on('text', async (ctx) => {
