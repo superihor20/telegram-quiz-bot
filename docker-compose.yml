@@ -9,5 +9,16 @@ services:
       - .:/usr/src/app
       - quiz_data_dopi:/usr/src/app
 
+  app_team:
+    build: .
+    env_file:
+      - .env.team
+    ports:
+      - '4200:4200'
+    volumes:
+      - .:/usr/src/app
+      - quiz_data_team:/usr/src/app
+
 volumes:
   quiz_data_dopi:
+  quiz_data_team:
