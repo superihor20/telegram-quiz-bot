@@ -8,7 +8,7 @@ import { WeeklyWinner } from 'src/weekly-winner/entities/weekly-winner.entity';
 
 export const AppDataSource = new DataSource({
   type: 'sqlite',
-  database: 'quiz.db',
+  database: './data/quiz.db',
   entities: [Question, Answer, User, Result, WeeklyWinner],
   migrations: ['dist/migrations/*.{t,j}s'],
   synchronize: false,
