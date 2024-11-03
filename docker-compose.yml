@@ -7,7 +7,8 @@ services:
       - '4201:4200'
     volumes:
       - .:/usr/src/app
-      - quiz_data_dopi:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./quiz.db:/usr/src/app/quiz.db
 
   app_team:
     build: .
@@ -17,8 +18,5 @@ services:
       - '4200:4200'
     volumes:
       - .:/usr/src/app
-      - quiz_data_team:/usr/src/app
-
-volumes:
-  quiz_data_dopi:
-  quiz_data_team:
+      - /usr/src/app/node_modules
+      - ./quiz.db:/usr/src/app/quiz.db
