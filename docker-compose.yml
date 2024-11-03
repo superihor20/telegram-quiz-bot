@@ -8,7 +8,7 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-      - ./quiz.db:/usr/src/app/quiz.db
+      - ./quiz.db:/usr/src/app/quiz.db:rw
 
   app_team:
     build: .
@@ -19,4 +19,4 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-      - ./quiz.db:/usr/src/app/quiz.db
+      - ./quiz.db:/usr/src/app/quiz.db:rw
