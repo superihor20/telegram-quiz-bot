@@ -17,13 +17,17 @@ export class AnswerService {
   ) {}
 
   async findById(id: number) {
-    const answer = await this.answerRepository.findOne({ where: { id } });
+    try {
+      const answer = await this.answerRepository.findOne({ where: { id } });
 
-    if (answer) {
-      return answer;
+      if (answer) {
+        return answer;
+      }
+
+      throw new NotFoundException('Answer not found');
+    } catch (e) {
+      throw new BadRequestException(e.message);
     }
-
-    throw new NotFoundException('Answer not found');
   }
 
   create(data: CreateAnswerDto) {
@@ -60,18 +64,31 @@ export class AnswerService {
 
   async delete(id: number) {
     await this.findById(id);
-    await this.answerRepository.delete(id);
+
+    try {
+      await this.answerRepository.delete(id);
+    } catch {
+      throw new BadRequestException('Invalid data');
+    }
   }
 
   async findByQuestionId(questionId: number) {
-    return this.answerRepository.find({
-      where: { question: { id: questionId } },
-    });
+    try {
+      return this.answerRepository.find({
+        where: { question: { id: questionId } },
+      });
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async findAll() {
-    const [questions, count] = await this.answerRepository.findAndCount();
+    try {
+      const [questions, count] = await this.answerRepository.findAndCount();
 
-    return { questions, count };
+      return { questions, count };
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 }

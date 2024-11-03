@@ -18,7 +18,7 @@ export class SchedulerService {
     private readonly userService: UserService,
   ) {}
 
-  @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 14:00, 18:00, 20:00
+  @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
   async sendQuiz() {
     const questionData = await this.questionService.findFirstNotPublished();
 

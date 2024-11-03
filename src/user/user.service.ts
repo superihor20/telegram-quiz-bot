@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -11,11 +11,21 @@ export class UserService {
   ) {}
 
   async findByTelegramId(telegramId: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { telegram_id: telegramId } });
+    try {
+      return this.userRepository.findOne({
+        where: { telegram_id: telegramId },
+      });
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async findById(id: number): Promise<User | null> {
-    return this.userRepository.findOne({ where: { id } });
+    try {
+      return this.userRepository.findOne({ where: { id } });
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async createUser(
@@ -23,20 +33,32 @@ export class UserService {
     name: string,
     username?: string,
   ): Promise<User> {
-    const user = this.userRepository.create({
-      telegram_id: telegramId,
-      name,
-      username,
-    });
+    try {
+      const user = this.userRepository.create({
+        telegram_id: telegramId,
+        name,
+        username,
+      });
 
-    return this.userRepository.save(user);
+      return this.userRepository.save(user);
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    try {
+      return this.userRepository.find();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async update(user: User): Promise<void> {
-    await this.userRepository.save(user);
+    try {
+      await this.userRepository.save(user);
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 }

@@ -17,13 +17,17 @@ export class QuestionService {
   ) {}
 
   async findById(id: number) {
-    const question = await this.questionRepository.findOne({ where: { id } });
+    try {
+      const question = await this.questionRepository.findOne({ where: { id } });
 
-    if (question) {
-      return question;
+      if (question) {
+        return question;
+      }
+
+      throw new NotFoundException('Question not found');
+    } catch (e) {
+      throw new BadRequestException(e.message);
     }
-
-    throw new NotFoundException('Question not found');
   }
 
   create(data: CreateQuestionDto) {
@@ -57,26 +61,42 @@ export class QuestionService {
 
   async delete(id: number) {
     await this.findById(id);
-    await this.questionRepository.delete(id);
+    try {
+      await this.questionRepository.delete(id);
+    } catch {
+      throw new BadRequestException('Invalid data');
+    }
   }
 
   async findAll() {
-    const [questions, count] = await this.questionRepository.findAndCount();
+    try {
+      const [questions, count] = await this.questionRepository.findAndCount();
 
-    return { questions, count };
+      return { questions, count };
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async findFirstNotPublished() {
-    return this.questionRepository.findOne({
-      where: { isPublished: false },
-      relations: ['answers'],
-    });
+    try {
+      return this.questionRepository.findOne({
+        where: { isPublished: false },
+        relations: ['answers'],
+      });
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async findBy(
     where: FindOptionsWhere<Question>,
     relations?: FindOptionsRelations<Question>,
   ) {
-    return this.questionRepository.findOne({ where, relations });
+    try {
+      return this.questionRepository.findOne({ where, relations });
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 }
