@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { WeeklyWinner } from './entities/weekly-winner.entity';
 import { UserService } from 'src/user/user.service';
 import { AllWinners } from './dto/all-winners';
+import { Chat } from 'src/telegram/entities/chat.entity';
 
 @Injectable()
 export class WeeklyWinnerService {
@@ -13,15 +14,17 @@ export class WeeklyWinnerService {
     private readonly userService: UserService,
   ) {}
 
-  async saveWeeklyWinner(userId: number): Promise<void> {
+  async saveWeeklyWinner(userId: number, chat: Chat): Promise<void> {
     try {
       const user = await this.userService.findById(userId);
+
       if (!user) {
         return;
       }
 
       const winner = new WeeklyWinner();
       winner.user = user;
+      winner.chat = chat;
 
       await this.weeklyWinnerRepository.save(winner);
     } catch (e) {
@@ -29,17 +32,18 @@ export class WeeklyWinnerService {
     }
   }
 
-  async getAllWinners(chatId: BigInt): Promise<AllWinners> {
+  async getAllWinners(chatId: bigint): Promise<AllWinners> {
     try {
       return await this.weeklyWinnerRepository
-        .createQueryBuilder('weeklyWinner')
-        .select('weeklyWinner.user', 'userId')
-        .addSelect('COUNT(weeklyWinner.user)', 'wins')
-        .leftJoin('weeklyWinner.user', 'user')
+        .createQueryBuilder('weekly_winner')
+        .select('weekly_winner.user_id', 'userId')
+        .addSelect('COUNT(weekly_winner.user_id)', 'wins')
         .addSelect('user.name', 'name')
         .addSelect('user.username', 'username')
-        .where('weeklyWinner.chatId = :chatId', { chatId }) // Filter by chatId if applicable
-        .groupBy('weeklyWinner.user')
+        .leftJoin('weekly_winner.user', 'user')
+        .leftJoin('chat', 'chat', 'weekly_winner.chat_id = chat.id')
+        .where('chat.chat_id = :chatId', { chatId })
+        .groupBy('weekly_winner.user_id')
         .addGroupBy('user.name')
         .addGroupBy('user.username')
         .orderBy('wins', 'DESC')

@@ -1,5 +1,6 @@
 import { Result } from 'src/result/entities/result.entity';
 import { User } from 'src/user/entities/user.entity';
+import { WeeklyWinner } from 'src/weekly-winner/entities/weekly-winner.entity';
 import {
   Entity,
   Column,
@@ -21,4 +22,7 @@ export class Chat {
 
   @OneToMany(() => Result, (result) => result.chat)
   results: Result;
+
+  @OneToMany(() => WeeklyWinner, (weeklyWinner) => weeklyWinner.chat)
+  weeklyWinners: WeeklyWinner[];
 }

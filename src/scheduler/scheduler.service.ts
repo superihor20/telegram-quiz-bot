@@ -19,8 +19,7 @@ export class SchedulerService {
     private readonly chatService: ChatService,
   ) {}
 
-  // @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
-  @Cron('* * * * *')
+  @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
   async sendQuiz() {
     const chats = await this.chatService.findAll();
 
@@ -53,16 +52,17 @@ export class SchedulerService {
     }
   }
 
-  async handleWinnersByChat(chatId: BigInt) {
+  async handleWinnersByChat(chatId: bigint) {
     const winners =
       await this.resultService.getUsersWithMaxCorrectAnswers(chatId);
+    const chat = await this.chatService.find(chatId);
 
     if (!winners.length) {
       return;
     }
 
     for (const winner of winners) {
-      await this.weeklyWinnerService.saveWeeklyWinner(winner.id);
+      await this.weeklyWinnerService.saveWeeklyWinner(winner.id, chat);
 
       const user = (await this.userService.findById(winner.id)) as User;
       user.streak = 0;

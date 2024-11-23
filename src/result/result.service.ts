@@ -38,7 +38,7 @@ export class ResultService {
     }
   }
 
-  async getLeaderboard(chatId: BigInt): Promise<LeaderboardUser[]> {
+  async getLeaderboard(chatId: bigint): Promise<LeaderboardUser[]> {
     try {
       const { startOfWeek, endOfWeek } = getWeekRange();
       const results: LowerCaseLeaderboardUser[] =
@@ -59,91 +59,46 @@ export class ResultService {
   }
 
   async getUsersWithMaxCorrectAnswers(
-    chatId: BigInt,
+    chatId: bigint,
   ): Promise<MaxCorrectAnswerUser[]> {
     try {
       const { startOfWeek, endOfWeek } = getWeekRange();
-
-      const subQuery = this.resultRepository
-        .createQueryBuilder('result')
-        .select('COUNT(result.is_correct)', 'correctAnswers')
-        .leftJoin('result.question', 'question')
-        .leftJoin('question.questionChats', 'questionChat')
-        .where('result.is_correct = :is_correct', { is_correct: true })
-        .andWhere('questionChat.chatId = :chatId', { chatId })
-        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
+      const result: MaxCorrectAnswerUser[] = (
+        await this.resultRepository.getUsersWithMostCorrectAnswers(
+          chatId,
           startOfWeek,
           endOfWeek,
-        })
-        .groupBy('result.user')
-        .orderBy('correctAnswers', 'DESC')
-        .limit(1);
+        )
+      ).map((user) => ({
+        ...user,
+        id: user.user_id,
+        correctAnswers: user.correctanswers,
+      }));
 
-      return await this.resultRepository
-        .createQueryBuilder('result')
-        .select('user.name', 'name')
-        .addSelect('user.username', 'username')
-        .addSelect('COUNT(result.is_correct)', 'correctAnswers')
-        .addSelect('user.id', 'id')
-        .leftJoin('result.user', 'user')
-        .leftJoin('result.question', 'question')
-        .leftJoin('question.questionChats', 'questionChat')
-        .where('result.is_correct = :is_correct', { is_correct: true })
-        .andWhere('questionChat.chatId = :chatId', { chatId })
-        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
-          startOfWeek,
-          endOfWeek,
-        })
-        .groupBy('user.id')
-        .having('COUNT(result.is_correct) = (' + subQuery.getQuery() + ')')
-        .setParameters(subQuery.getParameters())
-        .getRawMany();
+      return result;
     } catch (error) {
       return [];
     }
   }
 
   async getUsersWithMinCorrectAnswers(
-    chatId: BigInt,
+    chatId: bigint,
   ): Promise<MinCorrectAnswerUser[]> {
     try {
       const { startOfWeek, endOfWeek } = getWeekRange();
-
-      const subQuery = this.resultRepository
-        .createQueryBuilder('result')
-        .select('COUNT(result.is_correct)', 'correctAnswers')
-        .leftJoin('result.user', 'user')
-        .leftJoin('result.question', 'question')
-        .leftJoin('question.questionChats', 'questionChat')
-        .where('result.is_correct = :is_correct', { is_correct: true })
-        .andWhere('questionChat.chatId = :chatId', { chatId })
-        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
+      const result: MinCorrectAnswerUser[] = (
+        await this.resultRepository.getUsersWithLeastCorrectAnswers(
+          chatId,
           startOfWeek,
           endOfWeek,
-        })
-        .groupBy('user.id')
-        .orderBy('correctAnswers', 'ASC')
-        .limit(1);
+        )
+      ).map((user) => ({
+        ...user,
+        id: user.user_id,
+        incorrectAnswers: user.incorrectanswers,
+      }));
 
-      return await this.resultRepository
-        .createQueryBuilder('result')
-        .select('user.name', 'name')
-        .addSelect('user.username', 'username')
-        .addSelect('COUNT(result.is_correct)', 'correctAnswers')
-        .addSelect('user.id', 'id')
-        .leftJoin('result.user', 'user')
-        .leftJoin('result.question', 'question')
-        .leftJoin('question.questionChats', 'questionChat')
-        .where('result.is_correct = :is_correct', { is_correct: true })
-        .andWhere('questionChat.chatId = :chatId', { chatId })
-        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
-          startOfWeek,
-          endOfWeek,
-        })
-        .groupBy('user.id')
-        .having('COUNT(result.is_correct) = (' + subQuery.getQuery() + ')')
-        .setParameters(subQuery.getParameters())
-        .getRawMany();
+      return result;
     } catch (error) {
       return [];
     }
