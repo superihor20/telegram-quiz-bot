@@ -26,3 +26,6 @@ services:
 
 volumes:
   pg_data:
+
+networks:
+  quiz_network:
