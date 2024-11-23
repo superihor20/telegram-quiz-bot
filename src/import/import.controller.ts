@@ -6,15 +6,17 @@ import {
   HttpCode,
   HttpStatus,
   UploadedFile,
+  Param,
 } from '@nestjs/common';
 import { ImportService } from './import.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { QuestionType } from 'src/common/enum/question-type';
 
 @Controller('import')
 export class ImportController {
   constructor(private readonly importService: ImportService) {}
 
-  @Post('upload')
+  @Post('upload/:difficulty')
   @UseInterceptors(
     FileInterceptor('json-with-questions', {
       limits: {
@@ -24,8 +26,16 @@ export class ImportController {
       },
     }),
   )
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    await this.importService.importFromJson(file);
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('difficulty') difficulty: 'easy' | 'hard',
+  ) {
+    const questionType =
+      difficulty.toLowerCase() === 'easy'
+        ? QuestionType.EASY
+        : QuestionType.HARD;
+
+    await this.importService.importFromJson(file, questionType);
   }
 
   @Get('/test')

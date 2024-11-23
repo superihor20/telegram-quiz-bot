@@ -5,3 +5,7 @@ export type LeaderboardUser = {
   incorrectAnswers: number;
   streak: number;
 };
+
+export type LowerCaseLeaderboardUser = {
+  [K in keyof LeaderboardUser as Lowercase<K & string>]: LeaderboardUser[K];
+};

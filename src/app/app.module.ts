@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { Answer } from 'src/answer/entities/answer.entity';
-import { AppDataSource } from 'src/configs/data-source';
+import { AppDataSource } from 'src/common/data-source/data-source';
 import { Question } from 'src/question/entities/question.entity';
 import { Result } from 'src/result/entities/result.entity';
 import { User } from 'src/user/entities/user.entity';

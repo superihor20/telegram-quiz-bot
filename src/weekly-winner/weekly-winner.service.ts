@@ -13,11 +13,7 @@ export class WeeklyWinnerService {
     private readonly userService: UserService,
   ) {}
 
-  async saveWeeklyWinner(
-    userId: number,
-    startOfWeek: Date,
-    endOfWeek: Date,
-  ): Promise<void> {
+  async saveWeeklyWinner(userId: number): Promise<void> {
     try {
       const user = await this.userService.findById(userId);
       if (!user) {
@@ -26,8 +22,6 @@ export class WeeklyWinnerService {
 
       const winner = new WeeklyWinner();
       winner.user = user;
-      winner.weekStartDate = startOfWeek;
-      winner.weekEndDate = endOfWeek;
 
       await this.weeklyWinnerRepository.save(winner);
     } catch (e) {
@@ -35,16 +29,17 @@ export class WeeklyWinnerService {
     }
   }
 
-  async getAllWinners(): Promise<AllWinners> {
+  async getAllWinners(chatId: BigInt): Promise<AllWinners> {
     try {
-      return this.weeklyWinnerRepository
+      return await this.weeklyWinnerRepository
         .createQueryBuilder('weeklyWinner')
-        .select('weeklyWinner.user_id', 'userId')
-        .addSelect('COUNT(weeklyWinner.user_id)', 'wins')
+        .select('weeklyWinner.user', 'userId')
+        .addSelect('COUNT(weeklyWinner.user)', 'wins')
         .leftJoin('weeklyWinner.user', 'user')
         .addSelect('user.name', 'name')
         .addSelect('user.username', 'username')
-        .groupBy('weeklyWinner.user_id')
+        .where('weeklyWinner.chatId = :chatId', { chatId }) // Filter by chatId if applicable
+        .groupBy('weeklyWinner.user')
         .addGroupBy('user.name')
         .addGroupBy('user.username')
         .orderBy('wins', 'DESC')

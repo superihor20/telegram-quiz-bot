@@ -6,8 +6,9 @@ import { createCanvas } from 'canvas';
 import { CommandService } from './command.service';
 import { EventService } from './event.service';
 import { Reflector } from '@nestjs/core';
-import { COMMAND_HANDLER_KEY } from 'src/decorators/command-handler.decorator';
-import { EVENT_HANDLER_KEY } from 'src/decorators/event-handler.decorator';
+import { COMMAND_HANDLER_KEY } from 'src/common/decorators/command-handler.decorator';
+import { EVENT_HANDLER_KEY } from 'src/common/decorators/event-handler.decorator';
+import { ChatService } from './chat.service';
 
 @Injectable()
 export class TelegramService {
@@ -19,6 +20,7 @@ export class TelegramService {
     private readonly commandService: CommandService,
     private readonly eventService: EventService,
     private readonly reflector: Reflector,
+    private readonly chatService: ChatService,
   ) {
     this.bot = new Telegraf(this.appConfigService.telegramBotToken);
     this.registerMiddlewares();
@@ -70,6 +72,7 @@ export class TelegramService {
   }
 
   async sendQuiz(
+    chatId: bigint,
     questionId: number,
     question: string,
     answers: string[],
@@ -80,31 +83,33 @@ export class TelegramService {
     const image = await this.createImageWithText(
       code ? `${question}\n${code}` : `${question}`,
     );
-    await this.bot.telegram.sendPhoto(this.appConfigService.telegramChatId, {
+    await this.bot.telegram.sendPhoto(chatId.toString(), {
       source: image,
     });
 
     const quiz = await this.bot.telegram.sendQuiz(
-      this.appConfigService.telegramChatId,
+      chatId.toString(),
       'Оберіть правильну відповідь:',
       answers,
       {
-        explanation: explanation,
+        explanation:
+          explanation.length > 198
+            ? 'Запитайте, бо пояснення довге'
+            : explanation,
         is_anonymous: false,
         correct_option_id: correctAnswer,
       },
     );
 
+    const chat = await this.chatService.find(BigInt(quiz.chat.id));
+
     await this.questionService.update(questionId, {
       pollId: quiz.poll.id,
       messageId: quiz.message_id,
-      isPublished: true,
+      chat,
     });
 
-    await this.bot.telegram.pinChatMessage(
-      this.appConfigService.telegramChatId,
-      quiz.message_id,
-    );
+    await this.bot.telegram.pinChatMessage(chatId.toString(), quiz.message_id);
   }
 
   async createImageWithText(text: string) {

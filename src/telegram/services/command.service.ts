@@ -5,8 +5,8 @@ import { ResultService } from 'src/result/result.service';
 import { EmojiService } from './emoji.service';
 import { WeeklyWinnerService } from 'src/weekly-winner/weekly-winner.service';
 import { GifService } from './gif.service';
-import { formatAnswerText } from 'src/utils/format-answer-text';
-import { CommandHandler } from 'src/decorators/command-handler.decorator';
+import { formatAnswerText } from 'src/common/utils/format-answer-text';
+import { CommandHandler } from 'src/common/decorators/command-handler.decorator';
 import { LeaderboardUser } from 'src/result/dto/leaderboard-user';
 import { MaxCorrectAnswerUser } from 'src/result/dto/max-correct-answer-user';
 import { MinCorrectAnswerUser } from 'src/result/dto/min-correct-answer-user';
@@ -35,7 +35,9 @@ export class CommandService {
 
   @CommandHandler('leaderboard')
   async handleCommandLeaderboard(ctx: Context) {
-    const leaderboard = await this.resultService.getLeaderboard();
+    const leaderboard = await this.resultService.getLeaderboard(
+      BigInt(ctx.chat!.id),
+    );
 
     await this.replyIfEmpty(
       ctx,
@@ -55,7 +57,9 @@ export class CommandService {
 
   @CommandHandler('goat')
   async handleCommandGoat(ctx: Context) {
-    const best = await this.resultService.getUsersWithMaxCorrectAnswers();
+    const best = await this.resultService.getUsersWithMaxCorrectAnswers(
+      BigInt(ctx.chat!.id),
+    );
 
     await this.replyIfEmpty(
       ctx,
@@ -72,7 +76,9 @@ export class CommandService {
 
   @CommandHandler('cringe')
   async handleCommandCringe(ctx: Context) {
-    const cringe = await this.resultService.getUsersWithMinCorrectAnswers();
+    const cringe = await this.resultService.getUsersWithMinCorrectAnswers(
+      BigInt(ctx.chat!.id),
+    );
 
     await this.replyIfEmpty(
       ctx,
@@ -89,7 +95,9 @@ export class CommandService {
 
   @CommandHandler('mvp')
   async handleCommandMvp(ctx: Context) {
-    const winner = await this.weeklyWinnerService.getAllWinners();
+    const winner = await this.weeklyWinnerService.getAllWinners(
+      BigInt(ctx.chat!.id),
+    );
 
     await this.replyIfEmpty(
       ctx,

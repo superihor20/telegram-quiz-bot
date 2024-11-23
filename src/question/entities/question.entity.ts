@@ -4,8 +4,10 @@ import {
   Column,
   PrimaryGeneratedColumn,
   OneToMany,
-  UpdateDateColumn,
+  CreateDateColumn,
 } from 'typeorm';
+import { QuestionChat } from './question-chat.entity';
+import { QuestionType } from 'src/common/enum/question-type';
 
 @Entity()
 export class Question {
@@ -21,18 +23,15 @@ export class Question {
   @Column({ nullable: true })
   code: string;
 
+  @Column({ type: 'enum', enum: QuestionType })
+  type: QuestionType;
+
   @OneToMany(() => Answer, (answer) => answer.question, { cascade: true })
   answers: Answer[];
 
-  @Column({ default: false })
-  isPublished: boolean;
+  @OneToMany(() => QuestionChat, (questionChat) => questionChat.question)
+  questionChats: QuestionChat[];
 
-  @Column({ nullable: true })
-  pollId?: string;
-
-  @Column({ nullable: true })
-  messageId?: number;
-
-  @UpdateDateColumn({ type: 'datetime' })
-  lastUpdated: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
 }

@@ -11,6 +11,9 @@ import { EmojiService } from './services/emoji.service';
 import { AppConfigModule } from 'src/app-config/app-config.module';
 import { CommandService } from './services/command.service';
 import { EventService } from './services/event.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Chat } from './entities/chat.entity';
+import { ChatService } from './services/chat.service';
 
 @Module({
   imports: [
@@ -19,6 +22,7 @@ import { EventService } from './services/event.service';
     ResultModule,
     WeeklyWinnerModule,
     AppConfigModule,
+    TypeOrmModule.forFeature([Chat]),
   ],
   exports: [
     TelegramService,
@@ -27,6 +31,7 @@ import { EventService } from './services/event.service';
     EmojiService,
     CommandService,
     EventService,
+    ChatService,
   ],
   providers: [
     TelegramService,
@@ -35,6 +40,7 @@ import { EventService } from './services/event.service';
     EmojiService,
     CommandService,
     EventService,
+    ChatService,
   ],
 })
 export class TelegramModule {}

@@ -13,7 +13,8 @@ export class UserService {
   async findByTelegramId(telegramId: string): Promise<User | null> {
     try {
       return this.userRepository.findOne({
-        where: { telegram_id: telegramId },
+        where: { telegramId },
+        relations: ['chats'],
       });
     } catch (e) {
       throw new BadRequestException(e.message);
@@ -35,7 +36,7 @@ export class UserService {
   ): Promise<User> {
     try {
       const user = this.userRepository.create({
-        telegram_id: telegramId,
+        telegramId,
         name,
         username,
       });

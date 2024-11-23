@@ -2,7 +2,6 @@ import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
-  Column,
   CreateDateColumn,
   ManyToOne,
 } from 'typeorm';
@@ -14,12 +13,6 @@ export class WeeklyWinner {
 
   @ManyToOne(() => User, (user) => user.id)
   user: User;
-
-  @Column()
-  weekStartDate: Date;
-
-  @Column()
-  weekEndDate: Date;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,5 +1,14 @@
+import { Chat } from 'src/telegram/entities/chat.entity';
 import { WeeklyWinner } from 'src/weekly-winner/entities/weekly-winner.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -7,7 +16,7 @@ export class User {
   id: number;
 
   @Column()
-  telegram_id: string;
+  telegramId: string;
 
   @Column({ nullable: true })
   username?: string;
@@ -20,4 +29,11 @@ export class User {
 
   @Column({ default: 0 })
   streak: number;
+
+  @ManyToMany(() => Chat, (chat) => chat.users, { cascade: true })
+  @JoinTable({ name: 'user_chat' })
+  chats: Chat[];
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
 }

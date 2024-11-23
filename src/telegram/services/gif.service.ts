@@ -5,8 +5,8 @@ import {
   cringeGif,
   noBadWordsGif,
   pressFGifs,
-} from 'src/constants/gif';
-import { getRandomNumber } from 'src/utils/get-random-number';
+} from 'src/common/constants/gif';
+import { getRandomNumber } from 'src/common/utils/get-random-number';
 import { Context } from 'telegraf';
 
 @Injectable()

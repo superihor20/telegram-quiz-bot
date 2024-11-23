@@ -6,10 +6,11 @@ import { AppConfigService } from 'src/app-config/app-config.service';
 import { Message, Update } from 'telegraf/typings/core/types/typegram';
 import { QuestionService } from 'src/question/question.service';
 import { UserService } from 'src/user/user.service';
-import { containsBadWords } from 'src/utils/contains-bad-words';
-import { containsF } from 'src/utils/contains-f';
+import { containsBadWords } from 'src/common/utils/contains-bad-words';
+import { containsF } from 'src/common/utils/contains-f';
 import { GifService } from './gif.service';
-import { EventHandler } from 'src/decorators/event-handler.decorator';
+import { EventHandler } from 'src/common/decorators/event-handler.decorator';
+import { ChatService } from './chat.service';
 
 @Injectable()
 export class EventService {
@@ -20,7 +21,15 @@ export class EventService {
     private readonly questionService: QuestionService,
     private readonly userService: UserService,
     private readonly gifService: GifService,
+    private readonly chatService: ChatService,
   ) {}
+
+  @EventHandler('my_chat_member')
+  async handleMyChatMember(
+    ctx: NarrowedContext<Context<Update>, Update.MyChatMemberUpdate>,
+  ) {
+    await this.chatService.save(BigInt(ctx.update.my_chat_member.chat.id));
+  }
 
   @EventHandler('poll_answer')
   async handlePollAnswer(
@@ -28,27 +37,48 @@ export class EventService {
   ) {
     const user = await this.telegramUserService.findOrCreateUser(ctx);
 
-    if (user.telegram_id === this.appConfigService.adminId) {
-      return;
-    }
+    // if (user.telegramId === this.appConfigService.adminId) {
+    //   return;
+    // }
 
     const userAnswerIndex = ctx.update.poll_answer.option_ids[0];
     const question = await this.questionService.findBy(
       {
-        pollId: ctx.update.poll_answer.poll_id,
+        questionChats: {
+          pollId: ctx.update.poll_answer.poll_id,
+        },
       },
-      { answers: true },
+      { answers: true, questionChats: { chat: true } },
     );
     const answer = question?.answers.find(
       (_, index) => index === userAnswerIndex,
     );
 
+    if (
+      question?.questionChats[0].chat.chatId &&
+      !user.chats.find(
+        (chat) => chat.chatId === question.questionChats[0].chat.chatId,
+      )
+    ) {
+      const chat = await this.chatService.find(
+        question.questionChats[0].chat.chatId,
+      );
+
+      user.chats.push(chat);
+      await this.userService.update(user);
+    }
+
     if (question && answer) {
+      const chat = await this.chatService.find(
+        question.questionChats[0].chat.chatId,
+      );
+
       await this.resultService.saveResult(
         user,
         question,
         answer,
         answer?.isCorrect,
+        chat,
       );
 
       if (answer.isCorrect) {

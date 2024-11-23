@@ -3,7 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  UpdateDateColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { Question } from 'src/question/entities/question.entity';
 
@@ -21,6 +21,6 @@ export class Answer {
   @ManyToOne(() => Question, (question) => question.answers)
   question: Question;
 
-  @UpdateDateColumn({ type: 'datetime' })
-  lastUpdated: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
 }

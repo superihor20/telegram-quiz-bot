@@ -1,27 +1,28 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Result } from './entities/result.entity';
 import { Answer } from 'src/answer/entities/answer.entity';
 import { Question } from 'src/question/entities/question.entity';
 import { User } from 'src/user/entities/user.entity';
-import { getWeekRange } from 'src/utils/get-week-range';
+import { getWeekRange } from 'src/common/utils/get-week-range';
 import { MaxCorrectAnswerUser } from './dto/max-correct-answer-user';
 import { MinCorrectAnswerUser } from './dto/min-correct-answer-user';
-import { LeaderboardUser } from './dto/leaderboard-user';
+import {
+  LeaderboardUser,
+  LowerCaseLeaderboardUser,
+} from './dto/leaderboard-user';
+import { Chat } from 'src/telegram/entities/chat.entity';
+import { ResultRepository } from './result.respository';
 
 @Injectable()
 export class ResultService {
-  constructor(
-    @InjectRepository(Result)
-    private readonly resultRepository: Repository<Result>,
-  ) {}
+  constructor(private readonly resultRepository: ResultRepository) {}
 
   async saveResult(
     user: User,
     question: Question,
     answer: Answer,
     isCorrect: boolean,
+    chat: Chat,
   ): Promise<Result> {
     try {
       const result = this.resultRepository.create({
@@ -29,6 +30,7 @@ export class ResultService {
         question,
         answer,
         is_correct: isCorrect,
+        chat,
       });
       return await this.resultRepository.save(result);
     } catch (error) {
@@ -36,120 +38,113 @@ export class ResultService {
     }
   }
 
-  async getLeaderboard(): Promise<LeaderboardUser[]> {
+  async getLeaderboard(chatId: BigInt): Promise<LeaderboardUser[]> {
     try {
       const { startOfWeek, endOfWeek } = getWeekRange();
-
-      return await this.resultRepository
-        .createQueryBuilder('result')
-        .select('user.name', 'name')
-        .addSelect('user.username', 'username')
-        .addSelect('user.streak', 'streak')
-        .addSelect(
-          'COUNT(CASE WHEN result.is_correct = true THEN 1 END)',
-          'correctAnswers',
-        )
-        .addSelect(
-          'COUNT(CASE WHEN result.is_correct = false THEN 1 END)',
-          'incorrectAnswers',
-        )
-        .leftJoin('result.user', 'user')
-        .leftJoin('result.question', 'question')
-        .andWhere('question.lastUpdated BETWEEN :startOfWeek AND :endOfWeek', {
+      const results: LowerCaseLeaderboardUser[] =
+        await this.resultRepository.getUserResultsWithStats(
+          chatId,
           startOfWeek,
           endOfWeek,
-        })
-        .groupBy('user.id')
-        .orderBy('correctAnswers', 'DESC')
-        .getRawMany();
+        );
+
+      return results.map((result) => ({
+        ...result,
+        correctAnswers: result.correctanswers,
+        incorrectAnswers: result.incorrectanswers,
+      })) as LeaderboardUser[];
     } catch (error) {
       return [];
     }
   }
 
-  async getUsersWithMaxCorrectAnswers(): Promise<MaxCorrectAnswerUser[]> {
+  async getUsersWithMaxCorrectAnswers(
+    chatId: BigInt,
+  ): Promise<MaxCorrectAnswerUser[]> {
     try {
       const { startOfWeek, endOfWeek } = getWeekRange();
 
-      const maxCorrectAnswers = await this.resultRepository
+      const subQuery = this.resultRepository
         .createQueryBuilder('result')
         .select('COUNT(result.is_correct)', 'correctAnswers')
-        .leftJoin('result.user', 'user')
-        .where('result.is_correct = :is_correct', { is_correct: true })
         .leftJoin('result.question', 'question')
-        .andWhere('question.lastUpdated BETWEEN :startOfWeek AND :endOfWeek', {
+        .leftJoin('question.questionChats', 'questionChat')
+        .where('result.is_correct = :is_correct', { is_correct: true })
+        .andWhere('questionChat.chatId = :chatId', { chatId })
+        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
           startOfWeek,
           endOfWeek,
         })
-        .groupBy('user.id')
+        .groupBy('result.user')
         .orderBy('correctAnswers', 'DESC')
-        .limit(1)
-        .getRawOne();
+        .limit(1);
 
-      if (!maxCorrectAnswers) return [];
-
-      return this.resultRepository
+      return await this.resultRepository
         .createQueryBuilder('result')
         .select('user.name', 'name')
         .addSelect('user.username', 'username')
         .addSelect('COUNT(result.is_correct)', 'correctAnswers')
         .addSelect('user.id', 'id')
         .leftJoin('result.user', 'user')
-        .where('result.is_correct = :is_correct', { is_correct: true })
         .leftJoin('result.question', 'question')
-        .andWhere('question.lastUpdated BETWEEN :startOfWeek AND :endOfWeek', {
+        .leftJoin('question.questionChats', 'questionChat')
+        .where('result.is_correct = :is_correct', { is_correct: true })
+        .andWhere('questionChat.chatId = :chatId', { chatId })
+        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
           startOfWeek,
           endOfWeek,
         })
         .groupBy('user.id')
-        .having('COUNT(result.is_correct) = :maxCorrect', {
-          maxCorrect: maxCorrectAnswers.correctAnswers,
-        })
+        .having('COUNT(result.is_correct) = (' + subQuery.getQuery() + ')')
+        .setParameters(subQuery.getParameters())
         .getRawMany();
-    } catch {
+    } catch (error) {
       return [];
     }
   }
 
-  async getUsersWithMinCorrectAnswers(): Promise<MinCorrectAnswerUser[]> {
+  async getUsersWithMinCorrectAnswers(
+    chatId: BigInt,
+  ): Promise<MinCorrectAnswerUser[]> {
     try {
       const { startOfWeek, endOfWeek } = getWeekRange();
 
-      const minCorrectAnswers = await this.resultRepository
+      const subQuery = this.resultRepository
         .createQueryBuilder('result')
         .select('COUNT(result.is_correct)', 'correctAnswers')
         .leftJoin('result.user', 'user')
-        .where('result.is_correct = :is_correct', { is_correct: true })
         .leftJoin('result.question', 'question')
-        .andWhere('question.lastUpdated BETWEEN :startOfWeek AND :endOfWeek', {
+        .leftJoin('question.questionChats', 'questionChat')
+        .where('result.is_correct = :is_correct', { is_correct: true })
+        .andWhere('questionChat.chatId = :chatId', { chatId })
+        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
           startOfWeek,
           endOfWeek,
         })
         .groupBy('user.id')
         .orderBy('correctAnswers', 'ASC')
-        .limit(1)
-        .getRawOne();
+        .limit(1);
 
-      if (!minCorrectAnswers) return [];
-
-      return this.resultRepository
+      return await this.resultRepository
         .createQueryBuilder('result')
         .select('user.name', 'name')
         .addSelect('user.username', 'username')
         .addSelect('COUNT(result.is_correct)', 'correctAnswers')
+        .addSelect('user.id', 'id')
         .leftJoin('result.user', 'user')
-        .where('result.is_correct = :is_correct', { is_correct: true })
         .leftJoin('result.question', 'question')
-        .andWhere('question.lastUpdated BETWEEN :startOfWeek AND :endOfWeek', {
+        .leftJoin('question.questionChats', 'questionChat')
+        .where('result.is_correct = :is_correct', { is_correct: true })
+        .andWhere('questionChat.chatId = :chatId', { chatId })
+        .andWhere('question.createdAt BETWEEN :startOfWeek AND :endOfWeek', {
           startOfWeek,
           endOfWeek,
         })
         .groupBy('user.id')
-        .having('COUNT(result.is_correct) = :minCorrect', {
-          minCorrect: minCorrectAnswers.correctAnswers,
-        })
+        .having('COUNT(result.is_correct) = (' + subQuery.getQuery() + ')')
+        .setParameters(subQuery.getParameters())
         .getRawMany();
-    } catch {
+    } catch (error) {
       return [];
     }
   }

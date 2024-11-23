@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { QuestionService } from 'src/question/question.service';
 import { ResultService } from 'src/result/result.service';
+import { ChatService } from 'src/telegram/services/chat.service';
 import { TelegramService } from 'src/telegram/services/telegram.service';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
-import { getWeekRange } from 'src/utils/get-week-range';
 import { WeeklyWinnerService } from 'src/weekly-winner/weekly-winner.service';
 
 @Injectable()
@@ -16,41 +16,53 @@ export class SchedulerService {
     private readonly weeklyWinnerService: WeeklyWinnerService,
     private readonly resultService: ResultService,
     private readonly userService: UserService,
+    private readonly chatService: ChatService,
   ) {}
 
-  @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
+  // @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
+  @Cron('* * * * *')
   async sendQuiz() {
-    const questionData = await this.questionService.findFirstNotPublished();
+    const chats = await this.chatService.findAll();
 
-    if (!questionData) {
-      return;
+    for (const chat of chats) {
+      const questionData = await this.questionService.findFirstNotPublished(
+        chat.chatId,
+      );
+
+      if (!questionData) {
+        continue;
+      }
+      this.telegramService.sendQuiz(
+        chat.chatId,
+        questionData.id,
+        questionData.question,
+        questionData.answers.map((answer) => answer.answer),
+        questionData.answers.findIndex((answer) => answer.isCorrect),
+        questionData.explanation,
+        questionData.code,
+      );
     }
-
-    this.telegramService.sendQuiz(
-      questionData.id,
-      questionData.question,
-      questionData.answers.map((answer) => answer.answer),
-      questionData.answers.findIndex((answer) => answer.isCorrect),
-      questionData.explanation,
-      questionData.code,
-    );
   }
 
   @Cron('58 23 * * 4') // 23:58 on Thursday
   async saveWeeklyWinner() {
-    const { startOfWeek, endOfWeek } = getWeekRange();
-    const winners = await this.resultService.getUsersWithMaxCorrectAnswers();
+    const chats = await this.chatService.findAll();
+
+    for (const chat of chats) {
+      await this.handleWinnersByChat(chat.chatId);
+    }
+  }
+
+  async handleWinnersByChat(chatId: BigInt) {
+    const winners =
+      await this.resultService.getUsersWithMaxCorrectAnswers(chatId);
 
     if (!winners.length) {
       return;
     }
 
     for (const winner of winners) {
-      await this.weeklyWinnerService.saveWeeklyWinner(
-        winner.id,
-        startOfWeek,
-        endOfWeek,
-      );
+      await this.weeklyWinnerService.saveWeeklyWinner(winner.id);
 
       const user = (await this.userService.findById(winner.id)) as User;
       user.streak = 0;
