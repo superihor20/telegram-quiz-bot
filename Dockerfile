@@ -26,4 +26,4 @@ RUN pnpm install --prod
 
 EXPOSE 4200
 
-CMD ["/bin/bash", "-c", "/usr/src/app/wait-for-it.sh db:5432 -- pnpm run migration:run && node dist/main.js"]
+CMD ["/bin/bash", "-c", "/usr/src/app/wait-for-it.sh db:5432 -- pnpm run migration:run:prod && node dist/main.js"]
