@@ -37,9 +37,9 @@ export class EventService {
   ) {
     const user = await this.telegramUserService.findOrCreateUser(ctx);
 
-    // if (user.telegramId === this.appConfigService.adminId) {
-    //   return;
-    // }
+    if (user.telegramId === this.appConfigService.adminId) {
+      return;
+    }
 
     const userAnswerIndex = ctx.update.poll_answer.option_ids[0];
     const question = await this.questionService.findBy(

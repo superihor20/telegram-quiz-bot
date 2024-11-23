@@ -1,13 +1,4 @@
 services:
-  app:
-    build: .
-    env_file:
-      - .env
-    ports:
-      - '4200:4200'
-    depends_on:
-      - db
-
   db:
     image: postgres
     restart: always
@@ -17,6 +8,12 @@ services:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
       - pg_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
 
 volumes:
   pg_data:

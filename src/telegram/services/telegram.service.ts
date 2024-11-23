@@ -113,8 +113,8 @@ export class TelegramService {
   }
 
   async createImageWithText(text: string) {
-    const width = 500;
-    const height = 300;
+    const width = 800;
+    const height = 800;
     const canvas = createCanvas(width, height);
     const context = canvas.getContext('2d');
     let fontSize = 30;
