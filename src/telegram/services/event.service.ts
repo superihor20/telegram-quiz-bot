@@ -56,7 +56,7 @@ export class EventService {
 
     if (
       question?.questionChats[0].chat.chatId &&
-      !user.chats.find(
+      !user?.chats?.find(
         (chat) => chat.chatId === question.questionChats[0].chat.chatId,
       )
     ) {

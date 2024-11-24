@@ -10,13 +10,7 @@ import { QuestionChat } from 'src/question/entities/question-chat.entity';
 import { Chat } from 'src/telegram/entities/chat.entity';
 
 config();
-console.log(process.env);
 
-console.log('process.env.POSTGRES_HOST',process.env.POSTGRES_HOST);
-console.log('process.env.POSTGRES_PORT',process.env.POSTGRES_PORT);
-console.log('process.env.POSTGRES_USER',process.env.POSTGRES_USER);
-console.log('process.env.POSTGRES_PASSWORD',process.env.POSTGRES_PASSWORD);
-console.log('process.env.POSTGRES_DB',process.env.POSTGRES_DB);
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
