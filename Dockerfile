@@ -38,6 +38,7 @@ RUN npm install -g pnpm
 RUN pnpm install --prod
 
 COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/assets ./assets
 
 EXPOSE 4200
 

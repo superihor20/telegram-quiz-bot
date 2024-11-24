@@ -4,8 +4,6 @@ import { QuestionService } from 'src/question/question.service';
 import { ResultService } from 'src/result/result.service';
 import { ChatService } from 'src/telegram/services/chat.service';
 import { TelegramService } from 'src/telegram/services/telegram.service';
-import { User } from 'src/user/entities/user.entity';
-import { UserService } from 'src/user/user.service';
 import { WeeklyWinnerService } from 'src/weekly-winner/weekly-winner.service';
 
 @Injectable()
@@ -15,7 +13,6 @@ export class SchedulerService {
     private readonly questionService: QuestionService,
     private readonly weeklyWinnerService: WeeklyWinnerService,
     private readonly resultService: ResultService,
-    private readonly userService: UserService,
     private readonly chatService: ChatService,
   ) {}
 
@@ -64,10 +61,6 @@ export class SchedulerService {
 
     for (const winner of winners) {
       await this.weeklyWinnerService.saveWeeklyWinner(winner.id, chat);
-
-      const user = (await this.userService.findById(winner.id)) as User;
-      user.streak = 0;
-      await this.userService.update(user);
     }
   }
 }
