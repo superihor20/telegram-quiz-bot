@@ -19,7 +19,8 @@ export class SchedulerService {
     private readonly chatService: ChatService,
   ) {}
 
-  @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
+  // @Cron('0 10,12,14,16,18,20 * * *') // 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
+  @Cron('* * * * *')
   async sendQuiz() {
     const chats = await this.chatService.findAll();
 
