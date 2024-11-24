@@ -64,7 +64,7 @@ export class EventService {
         question.questionChats[0].chat.chatId,
       );
 
-      user.chats.push(chat);
+      user.chats = [chat];
       await this.userService.update(user);
     }
 
