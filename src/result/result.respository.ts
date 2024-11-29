@@ -33,6 +33,8 @@ export class ResultRepository extends Repository<Result> {
             result
           JOIN filtered_question_chat 
             ON filtered_question_chat.chat_id = result.chat_id
+          WHERE 
+            result.created_at BETWEEN $2 AND $3 
         ),
         filtered_users AS (
           SELECT DISTINCT
