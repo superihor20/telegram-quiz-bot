@@ -10,7 +10,7 @@ COPY . .
 
 RUN pnpm run build
 
-FROM node:18 AS production
+FROM node:18-slim AS production
 
 WORKDIR /usr/src/app
 
@@ -29,6 +29,8 @@ RUN npm install -g pnpm
 COPY --from=build /usr/src/app/dist ./dist
 
 COPY --from=build /usr/src/app/assets ./assets
+
+COPY --from=build /usr/src/app/fonts ./fonts
 
 RUN pnpm install --prod --frozen-lockfile
 

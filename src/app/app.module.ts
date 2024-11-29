@@ -29,6 +29,9 @@ import { AppConfigModule } from 'src/app-config/app-config.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'assets'),
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'fonts'),
+    }),
     AnswerModule,
     ResultModule,
     TelegramModule,

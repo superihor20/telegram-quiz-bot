@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
 import { QuestionService } from 'src/question/question.service';
 import { AppConfigService } from 'src/app-config/app-config.service';
-import { createCanvas } from 'canvas';
+import { createCanvas, registerFont } from 'canvas';
 import { CommandService } from './command.service';
 import { EventService } from './event.service';
 import { Reflector } from '@nestjs/core';
 import { COMMAND_HANDLER_KEY } from 'src/common/decorators/command-handler.decorator';
 import { EVENT_HANDLER_KEY } from 'src/common/decorators/event-handler.decorator';
 import { ChatService } from './chat.service';
+import { resolve } from 'path';
 
 @Injectable()
 export class TelegramService {
@@ -27,6 +28,11 @@ export class TelegramService {
     this.registerCommands();
     this.registerEventHandlers();
     this.bot.launch();
+
+    registerFont(
+      resolve(__dirname, '..', '..', '..', 'fonts', 'Roboto-Regular.ttf'),
+      { family: 'Roboto' },
+    );
   }
 
   private registerCommands() {
@@ -118,7 +124,7 @@ export class TelegramService {
     const canvas = createCanvas(width, height);
     const context = canvas.getContext('2d');
     let fontSize = 30;
-    context.font = `${fontSize}px Arial`;
+    context.font = `${fontSize}px Roboto`;
     const lines = text.split('\n');
 
     while (
@@ -126,7 +132,7 @@ export class TelegramService {
       fontSize > 10
     ) {
       fontSize -= 2;
-      context.font = `${fontSize}px Arial`;
+      context.font = `${fontSize}px Roboto`;
     }
 
     context.fillStyle = '#000';
@@ -137,7 +143,7 @@ export class TelegramService {
 
     const lineHeight = fontSize * 1.2;
     const textHeight = lineHeight * lines.length;
-    const startY = (height - textHeight) / 2 + lineHeight / 2; // Center the text block vertically
+    const startY = (height - textHeight) / 2 + lineHeight / 2;
 
     lines.forEach((line, index) => {
       const y = startY + index * lineHeight;
