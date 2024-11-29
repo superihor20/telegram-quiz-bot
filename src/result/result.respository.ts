@@ -75,7 +75,8 @@ export class ResultRepository extends Repository<Result> {
       WITH filtered_question_chat AS (
         SELECT DISTINCT
           question_chat.chat_id,
-          question_chat.created_at
+          question_chat.created_at,
+          question_chat.question_id
         FROM question_chat
         JOIN chat ON chat.id = question_chat.chat_id
         WHERE 
@@ -90,7 +91,9 @@ export class ResultRepository extends Repository<Result> {
         FROM 
           result
         JOIN filtered_question_chat 
-          ON filtered_question_chat.chat_id = result.chat_id
+          ON filtered_question_chat.question_id = result.question_id -- Link results to filtered questions
+        WHERE 
+          result.created_at BETWEEN $2 AND $3
       ),
       filtered_users AS (
         SELECT DISTINCT
@@ -100,20 +103,40 @@ export class ResultRepository extends Repository<Result> {
         JOIN chat ON chat.id = user_chat.chat_id
         WHERE 
           chat.chat_id = $1
+      ),
+      user_scores AS (
+        -- Calculate correct answer counts for each user
+        SELECT 
+          "user".id AS user_id,
+          "user".name,
+          "user".username,
+          COUNT(CASE WHEN filtered_results.is_correct = true THEN 1 END) AS correctAnswers
+        FROM 
+          "user"
+        LEFT JOIN filtered_results 
+          ON filtered_results.user_id = "user".id
+        WHERE 
+          "user".id IN (SELECT user_id FROM filtered_users)
+        GROUP BY 
+          "user".id, "user".name, "user".username
+      ),
+      max_correct AS (
+        SELECT 
+          MAX(correctAnswers) AS maxCorrect
+        FROM 
+          user_scores
       )
       SELECT 
-        "user".id AS user_id,
-        "user".name,
-        "user".username,
-        COUNT(CASE WHEN filtered_results.is_correct = true THEN 1 END) AS correctAnswers
+        us.user_id,
+        us.name,
+        us.username,
+        us.correctAnswers
       FROM 
-        "user"
-      LEFT JOIN filtered_results ON filtered_results.user_id = "user".id
-      WHERE 
-        "user".id IN (SELECT user_id FROM filtered_users)
-      GROUP BY 
-        "user".id, "user".name, "user".username, "user".streak
-      ORDER BY correctAnswers DESC;
+        user_scores us
+      JOIN max_correct mc 
+        ON us.correctAnswers = mc.maxCorrect
+      ORDER BY 
+        us.correctAnswers DESC;
     `;
     return await this.query(query, [chatId, startOfWeek, endOfWeek]);
   }
@@ -127,7 +150,8 @@ export class ResultRepository extends Repository<Result> {
       WITH filtered_question_chat AS (
         SELECT DISTINCT
           question_chat.chat_id,
-          question_chat.created_at
+          question_chat.created_at,
+          question_chat.question_id
         FROM question_chat
         JOIN chat ON chat.id = question_chat.chat_id
         WHERE 
@@ -142,7 +166,9 @@ export class ResultRepository extends Repository<Result> {
         FROM 
           result
         JOIN filtered_question_chat 
-          ON filtered_question_chat.chat_id = result.chat_id
+          ON filtered_question_chat.question_id = result.question_id
+        WHERE 
+          result.created_at BETWEEN $2 AND $3
       ),
       filtered_users AS (
         SELECT DISTINCT
@@ -152,20 +178,40 @@ export class ResultRepository extends Repository<Result> {
         JOIN chat ON chat.id = user_chat.chat_id
         WHERE 
           chat.chat_id = $1
+      ),
+      user_scores AS (
+        SELECT 
+          "user".id AS user_id,
+          "user".name,
+          "user".username,
+          COUNT(CASE WHEN filtered_results.is_correct = true THEN 1 END) AS incorrectAnswers
+        FROM 
+          "user"
+        LEFT JOIN filtered_results 
+          ON filtered_results.user_id = "user".id
+        WHERE 
+          "user".id IN (SELECT user_id FROM filtered_users)
+        GROUP BY 
+          "user".id, "user".name, "user".username
+      ),
+      min_correct AS (
+        SELECT 
+          MIN(incorrectAnswers) AS minCorrect
+        FROM 
+          user_scores
       )
       SELECT 
-        "user".id AS user_id,
-        "user".name,
-        "user".username,
-        COUNT(CASE WHEN filtered_results.is_correct = false THEN 1 END) AS incorrectAnswers
+        us.user_id,
+        us.name,
+        us.username,
+        us.incorrectAnswers
       FROM 
-        "user"
-      LEFT JOIN filtered_results ON filtered_results.user_id = "user".id
-      WHERE 
-        "user".id IN (SELECT user_id FROM filtered_users)
-      GROUP BY 
-        "user".id, "user".name, "user".username, "user".streak
-      ORDER BY incorrectAnswers ASC;
+        user_scores us
+      JOIN min_correct mc 
+        ON us.incorrectAnswers = mc.minCorrect
+      ORDER BY 
+        us.incorrectAnswers ASC;
+      
     `;
     return await this.query(query, [chatId, startOfWeek, endOfWeek]);
   }
