@@ -1,50 +1,36 @@
-FROM node:18 AS build
+FROM node:18-slim AS build
 
 WORKDIR /usr/src/app
 
-RUN apt-get update && \
-    apt-get install -y tzdata && \
-    ln -snf /usr/share/zoneinfo/Europe/Kyiv /etc/localtime && echo "Europe/Kyiv" > /etc/timezone && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-COPY wait-for-it.sh /usr/src/app/
-
-RUN chmod +x /usr/src/app/wait-for-it.sh
-
 COPY package.json pnpm-lock.yaml ./
 
-RUN npm install -g pnpm
-
-RUN pnpm install
+RUN npm install -g pnpm && pnpm install
 
 COPY . .
 
 RUN pnpm run build
 
-FROM node:18 AS production
+FROM node:18-slim AS production
 
 WORKDIR /usr/src/app
 
-RUN apt-get update && \
-    apt-get install -y tzdata && \
-    ln -snf /usr/share/zoneinfo/Europe/Kyiv /etc/localtime && echo "Europe/Kyiv" > /etc/timezone && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production
+
+ENV TZ=Europe/Kyiv
 
 COPY wait-for-it.sh /usr/src/app/
 
 RUN chmod +x /usr/src/app/wait-for-it.sh
 
-COPY --from=build /usr/src/app/dist ./dist
-
-COPY --from=build /usr/src/app/assets ./assets
-
 COPY package.json pnpm-lock.yaml ./
 
 RUN npm install -g pnpm
 
-RUN pnpm install --prod
+COPY --from=build /usr/src/app/dist ./dist
 
+COPY --from=build /usr/src/app/assets ./assets
 
+RUN pnpm install --prod --frozen-lockfile
 
 EXPOSE 4200
 
