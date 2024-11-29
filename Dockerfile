@@ -24,14 +24,15 @@ RUN apt-get update && \
 COPY wait-for-it.sh /usr/src/app/
 RUN chmod +x /usr/src/app/wait-for-it.sh
 
+COPY --from=build /usr/src/app/dist ./dist
+
+COPY --from=build /usr/src/app/assets ./assets
+
 COPY package.json pnpm-lock.yaml ./
 
 RUN npm install -g pnpm
 
 RUN pnpm install --prod
-
-COPY --from=build /usr/src/app/dist ./dist
-COPY --from=build /usr/src/app/assets ./assets
 
 EXPOSE 4200
 
