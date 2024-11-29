@@ -113,8 +113,7 @@ export class ResultRepository extends Repository<Result> {
         "user".id IN (SELECT user_id FROM filtered_users)
       GROUP BY 
         "user".id, "user".name, "user".username, "user".streak
-      ORDER BY correctAnswers DESC
-      LIMIT 1;
+      ORDER BY correctAnswers DESC;
     `;
     return await this.query(query, [chatId, startOfWeek, endOfWeek]);
   }
@@ -166,8 +165,7 @@ export class ResultRepository extends Repository<Result> {
         "user".id IN (SELECT user_id FROM filtered_users)
       GROUP BY 
         "user".id, "user".name, "user".username, "user".streak
-      ORDER BY incorrectAnswers ASC
-      LIMIT 1;
+      ORDER BY incorrectAnswers ASC;
     `;
     return await this.query(query, [chatId, startOfWeek, endOfWeek]);
   }
