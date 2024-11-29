@@ -10,7 +10,7 @@ COPY . .
 
 RUN pnpm run build
 
-FROM node:18-slim AS production
+FROM node:18 AS production
 
 WORKDIR /usr/src/app
 
