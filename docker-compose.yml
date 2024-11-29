@@ -1,7 +1,6 @@
 services:
   app:
     build: .
-    restart: always
     env_file:
       - .env.prod
     ports:
