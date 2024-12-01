@@ -6,8 +6,8 @@ import { createCanvas, registerFont } from 'canvas';
 import { CommandService } from './command.service';
 import { EventService } from './event.service';
 import { Reflector } from '@nestjs/core';
-import { COMMAND_HANDLER_KEY } from 'src/common/decorators/command-handler.decorator';
-import { EVENT_HANDLER_KEY } from 'src/common/decorators/event-handler.decorator';
+import { COMMAND_HANDLER_KEY } from 'src/question/decorators/command-handler.decorator';
+import { EVENT_HANDLER_KEY } from 'src/question/decorators/event-handler.decorator';
 import { ChatService } from './chat.service';
 import { resolve } from 'path';
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { QuestionService } from 'src/question/question.service';
 import { ImportedData, ImportedQuestion } from 'src/import/types/imported-data';
-import { QuestionType } from 'src/common/enum/question-type';
+import { QuestionType } from 'src/question/enum/question-type';
 
 @Injectable()
 export class ImportService {

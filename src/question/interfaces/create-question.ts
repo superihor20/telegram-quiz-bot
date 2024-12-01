@@ -1,10 +1,10 @@
-import { QuestionType } from 'src/common/enum/question-type';
+import { QuestionType } from 'src/question/enum/question-type';
 import { ImportedAnswer } from 'src/import/types/imported-data';
 
-export type CreateQuestionDto = {
+export interface CreateQuestion {
   question: string;
   explanation?: string;
   code?: string;
   type: QuestionType;
   answers: ImportedAnswer[];
-};
+}

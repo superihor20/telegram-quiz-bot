@@ -9,7 +9,7 @@ import { UserService } from 'src/user/user.service';
 import { containsBadWords } from 'src/common/utils/contains-bad-words';
 import { containsF } from 'src/common/utils/contains-f';
 import { GifService } from './gif.service';
-import { EventHandler } from 'src/common/decorators/event-handler.decorator';
+import { EventHandler } from 'src/question/decorators/event-handler.decorator';
 import { ChatService } from './chat.service';
 
 @Injectable()

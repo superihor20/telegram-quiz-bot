@@ -1,7 +1,7 @@
 import { Chat } from 'src/telegram/entities/chat.entity';
 
-export type QuestionChatDto = {
+export interface QuestionChat {
   pollId: string;
   messageId: number;
   chat: Chat;
-};
+}

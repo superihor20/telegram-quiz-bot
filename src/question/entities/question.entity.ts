@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { QuestionChat } from './question-chat.entity';
-import { QuestionType } from 'src/common/enum/question-type';
+import { QuestionType } from 'src/question/enum/question-type';
 
 @Entity()
 export class Question {

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ImportService } from './import.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { QuestionType } from 'src/common/enum/question-type';
+import { QuestionType } from 'src/question/enum/question-type';
 
 @Controller('import')
 export class ImportController {

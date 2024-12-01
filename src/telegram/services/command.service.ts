@@ -6,7 +6,7 @@ import { EmojiService } from './emoji.service';
 import { WeeklyWinnerService } from 'src/weekly-winner/weekly-winner.service';
 import { GifService } from './gif.service';
 import { formatAnswerText } from 'src/common/utils/format-answer-text';
-import { CommandHandler } from 'src/common/decorators/command-handler.decorator';
+import { CommandHandler } from 'src/question/decorators/command-handler.decorator';
 import { LeaderboardUser } from 'src/result/dto/leaderboard-user';
 import { MaxCorrectAnswerUser } from 'src/result/dto/max-correct-answer-user';
 import { MinCorrectAnswerUser } from 'src/result/dto/min-correct-answer-user';

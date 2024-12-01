@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Question } from './entities/question.entity';
-import { CreateQuestionDto } from './dto/create-question.dto';
-import { QuestionChatDto } from './dto/question-chat.dto';
+import { CreateQuestion } from './interfaces/create-question';
+import { QuestionChat as QuestionChatType } from './interfaces/question-chat';
 import { QuestionChat } from './entities/question-chat.entity';
 
 @Injectable()
@@ -19,40 +19,33 @@ export class QuestionService {
     private readonly questionChatRepository: Repository<QuestionChat>,
   ) {}
 
-  async findById(id: number) {
-    try {
-      const question = await this.questionRepository.findOne({ where: { id } });
+  async findById(id: number): Promise<Question> {
+    const question = await this.questionRepository.findOne({ where: { id } });
 
-      if (question) {
-        return question;
-      }
-
-      throw new NotFoundException('Question not found');
-    } catch (e) {
-      throw new BadRequestException(e.message);
+    if (question) {
+      return question;
     }
+
+    throw new NotFoundException('Question not found');
   }
 
-  create(data: CreateQuestionDto) {
-    try {
-      return this.questionRepository.create(data);
-    } catch {
-      throw new BadRequestException('Invalid data');
-    }
+  create(data: CreateQuestion): Question {
+    return this.questionRepository.create(data);
   }
 
-  async save(data: CreateQuestionDto) {
-    try {
-      const question = this.create(data);
-
-      await this.questionRepository.save(question);
-    } catch (e) {
-      console.log(e);
-      throw new BadRequestException(e?.message);
+  async save(data: CreateQuestion): Promise<void> {
+    if (!data.question || !data.answers) {
+      throw new BadRequestException(
+        'Invalid question data: question and answers are required',
+      );
     }
+
+    const question = this.create(data);
+
+    await this.questionRepository.save(question);
   }
 
-  async update(id: number, data: QuestionChatDto) {
+  async update(id: number, data: QuestionChatType): Promise<void> {
     const question = await this.findById(id);
 
     await this.questionChatRepository.save(
@@ -61,64 +54,46 @@ export class QuestionService {
         question,
       }),
     );
-
-    try {
-    } catch {
-      throw new BadRequestException('Invalid data');
-    }
   }
 
-  async delete(id: number) {
+  async delete(id: number): Promise<void> {
     await this.findById(id);
-    try {
-      await this.questionRepository.delete(id);
-    } catch {
-      throw new BadRequestException('Invalid data');
-    }
+    await this.questionRepository.delete(id);
   }
 
-  async findAll() {
-    try {
-      const [questions, count] = await this.questionRepository.findAndCount();
+  async findAll(): Promise<{
+    questions: Question[];
+    count: number;
+  }> {
+    const [questions, count] = await this.questionRepository.findAndCount();
 
-      return { questions, count };
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
+    return { questions, count };
   }
 
-  async findFirstNotPublished(chatId: bigint) {
-    try {
-      return await this.questionRepository
-        .createQueryBuilder('q')
-        .leftJoinAndSelect('q.answers', 'a')
-        .where((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('COALESCE(MAX(innerQ.id), 0)', 'maxId')
-            .from('question', 'innerQ')
-            .innerJoin('question_chat', 'qc', 'innerQ.id = qc.question_id')
-            .innerJoin('chat', 'c', 'qc.chat_id = c.id')
-            .where('c.chat_id = :chatId')
-            .getQuery();
-          return 'q.id > (' + subQuery + ')';
-        })
-        .setParameter('chatId', chatId)
-        .orderBy('a.id', 'ASC')
-        .getOne();
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
+  async findFirstNotPublished(chatId: bigint): Promise<Question | null> {
+    return this.questionRepository
+      .createQueryBuilder('q')
+      .leftJoinAndSelect('q.answers', 'a')
+      .where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('COALESCE(MAX(innerQ.id), 0)', 'maxId')
+          .from('question', 'innerQ')
+          .innerJoin('question_chat', 'qc', 'innerQ.id = qc.question_id')
+          .innerJoin('chat', 'c', 'qc.chat_id = c.id')
+          .where('c.chat_id = :chatId')
+          .getQuery();
+        return 'q.id > (' + subQuery + ')';
+      })
+      .setParameter('chatId', chatId)
+      .orderBy('a.id', 'ASC')
+      .getOne();
   }
 
   async findBy(
     where: FindOptionsWhere<Question>,
     relations?: FindOptionsRelations<Question>,
-  ) {
-    try {
-      return this.questionRepository.findOne({ where, relations });
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
+  ): Promise<Question | null> {
+    return this.questionRepository.findOne({ where, relations });
   }
 }
