@@ -30,12 +30,17 @@ export class ImportController {
     @UploadedFile() file: Express.Multer.File,
     @Param('difficulty') difficulty: 'easy' | 'hard',
   ) {
-    const questionType =
-      difficulty.toLowerCase() === 'easy'
-        ? QuestionType.EASY
-        : QuestionType.HARD;
+    try {
+      const questionType =
+        difficulty.toLowerCase() === 'easy'
+          ? QuestionType.EASY
+          : QuestionType.HARD;
 
-    await this.importService.importFromJson(file, questionType);
+      await this.importService.importFromJson(file, questionType);
+    } catch (error) {
+      console.error('Error during file upload:', error);
+      throw new Error('File processing failed. Please check the file format.');
+    }
   }
 
   @Get('/test')

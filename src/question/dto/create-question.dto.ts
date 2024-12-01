@@ -1,5 +1,5 @@
 import { QuestionType } from 'src/common/enum/question-type';
-import { ImportedAnswer } from 'src/common/types/imported-data';
+import { ImportedAnswer } from 'src/import/types/imported-data';
 
 export type CreateQuestionDto = {
   question: string;
