@@ -146,6 +146,7 @@ export class ResultRepository extends Repository<Result> {
     startOfWeek: Date,
     endOfWeek: Date,
   ) {
+    console.log(123);
     const query = `
       WITH filtered_question_chat AS (
         SELECT DISTINCT
